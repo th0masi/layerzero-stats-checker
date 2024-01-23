@@ -1,0 +1,22 @@
+:root {
+  --bg-basic: #121520;
+  --bg-accent-1-100: #0d111a;
+  --bg-accent-1-70: rgba(13, 17, 26, 0.7);
+  --bg-accent-2: #19213c;
+  --bg-accent-2-80: rgba(25, 33, 60, 0.8);
+  --bg-accent-3-70: rgba(25, 32, 48, 0.7);
+  --bg-gradient: linear-gradient(105deg, #0d111a 57.54%, #0f1732 98.75%);
+  --primary: #2468e4;
+  --primary-gradient: linear-gradient(135deg, #36f 0%, #0231c5 100%);
+  --dark-primary-gradient: linear-gradient(135deg, #002593 0%, #091949 100%);
+  --primary-20: rgba(36, 104, 228, 0.2);
+  --text: #fff;
+  --bg-accent-gray: #1C1F2A;
+  --text-secondary: #8b8b8c;
+  --success: #34c759;
+  --success-20: rgba(52, 199, 89, 0.2);
+  --error: #fe5656;
+  --error-20: rgba(254, 86, 86, 0.2);
+  --warning: #fc0;
+  --white: #fff;
+}

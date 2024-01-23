@@ -1,0 +1,43 @@
+.top {
+  display: flex;
+  align-items: center;
+  margin-bottom: 45px;
+
+  &__logo {
+    margin-right: 39px;
+    text-decoration: none;
+    transition: opacity 0.3s;
+    display: block;
+    &:hover {
+      opacity: 0.6;
+    }
+  }
+
+  &__btns {
+    margin-right: 72px;
+    width: 100%;
+    max-width: 283px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    &-container {
+      display: flex;
+      gap: 10px;
+
+      .second {
+        max-width: 56px;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        justify-content: center;
+      }
+    }
+
+    .btn {
+      padding: 13px 15px;
+      width: 100%;
+      line-height: auto;
+    }
+  }
+}

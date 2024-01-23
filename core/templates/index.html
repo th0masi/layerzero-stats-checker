@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LayerZero checker by ThorLab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2" />
+    <style>
+      /* Стиль для затемнения фона */
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+      }
+
+      /* Стиль для модального окна */
+      #downloadModal {
+        background: var(--bg-gradient);
+        padding: 50px;
+        border-radius: 15px;
+        z-index: 10;
+        display: block;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        background-color: rgba(0, 0, 0, 0.5);
+      }
+    </style>
+  </head>
+  <body class="body">
+    <div class="container">
+      <div class="top">
+        <a href="https://t.me/thor_lab" class="top__logo" target="_blank">
+          <img src="{{ url_for('static', filename='assets/thor.svg') }}" alt="logo" />
+        </a>
+        <div class="top__btns">
+          <div class="top__btns-container">
+            <button class="btn primary" id="refresh-button">Обновить данные</button>
+            <button class="btn primary second" id="downloadButton">
+                <img src="{{ url_for('static', filename='assets/file.svg') }}" alt="file" />
+            </button>
+          </div>
+          <div class="select-wrap">
+            <div class="select-input js-select">
+              <input
+                type="text"
+                class="js-select-input-pass"
+                name="sort"
+                disabled
+                value="сортировать по"
+              />
+              <img src="{{ url_for('static', filename='assets/arrow-down.svg') }}" />
+            </div>
+            <div class="select-input__list hide">
+              <div>
+                <div class="select-input__item" onclick="change('rank', 'по рангу')">
+                  рангу
+                </div>
+                <div class="select-input__item" onclick="change('txsCount', 'по транзакциям')">
+                  кол-ву транзакций
+                </div>
+                <div class="select-input__item" onclick="change('volume', 'по объему')">
+                  объему
+                </div>
+                <div class="select-input__item" onclick="change('distinctMonths', 'по месяцам')">
+                  активным месяцам
+                </div>
+                <div class="select-input__item" onclick="change('networks', 'по исх. сетям')">
+                  исходящим сетям
+                </div>
+                <div class="select-input__item" onclick="change('destChains', 'по сетям назначения')">
+                  сетям назначения
+                </div>
+                <div class="select-input__item" onclick="change('contracts', 'по контрактам')">
+                  уникальным контрактам
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="banner">
+          <div class="banner__item">
+            <span>Всего кошельков</span><span id="walletsCount">{{ wallets_count|format_number }}</span>
+          </div>
+          <div class="banner__item">
+            <span>Кошельков в 500К</span><span id="top500KWallets">{{ top_500k_wallets|format_number }}</span>
+          </div>
+          <div class="banner__item">
+            <span>Кошельков в 1М</span><span id="top1MWallets">{{ top_1m_wallets|format_number }}</span>
+          </div>
+          <div class="banner__item">
+            <span>Общий объем</span><span id="totalVolume">{{ total_volume|format_number }}$</span>
+          </div>
+          <div class="banner__item">
+            <span>Топ ранг:</span><span id="minRank">{{ min_rank|format_number }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="table-header">
+        <div class="cell cell-lg">Кошелёк</div>
+        <div class="cell cell-size-1">Ранг</div>
+        <div class="cell cell-size-2">Объем</div>
+        <div class="cell cell-size-3">Кол-во<br />Транзакций</div>
+        <div class="cell cell-size-4">Исходящие сети/<br />Сети назначения</div>
+        <div class="cell cell-size-5">Уникальные<br />контракты</div>
+        <div class="cell cell-size-6">Активные<br />месяцы</div>
+        <div class="cell cell-size-7">Последнее<br />обновление</div>
+      </div>
+      <div class="table-body">
+          {% for wallet in wallets %}
+          <div class="table-item">
+              <div class="cell cell-lg">{{ wallet.address }}</div>
+              <div class="cell cell-size-1">{{ wallet.rank|format_number }}</div>
+              <div class="cell cell-size-2">{{ wallet.volume|format_number }}$</div>
+              <div class="cell cell-size-3">{{ wallet.txsCount }}</div>
+              <div class="cell cell-size-4">{{ wallet.networks }} / {{ wallet.destChains }}</div>
+              <div class="cell cell-size-5">{{ wallet.contracts }}</div>
+              <div class="cell cell-size-6">{{ wallet.distinctMonths }}</div>
+              <div class="cell cell-size-7">{{ wallet.rankUpdatedAt }} часа назад</div>
+          </div>
+          {% endfor %}
+      </div>
+      <div class="modal-backdrop" id="modalBackdrop">
+        <div id="downloadModal">
+          <div>
+            <input type="number" id="rankInput" placeholder="Введите ранг" class="item__input">
+          </div>
+          <div style="margin-top: 20px;">
+            <button style="margin-left: auto;margin-right: auto;" class="btn primary" onclick="downloadWallets()">Сохранить</button>
+          </div>
+          <div id="modalMessage"></div>
+        </div>
+      </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      function show() {
+        const list = document.querySelector(".select-input__list");
+        list.classList.toggle("hide");
+      }
+
+      function change(sortBy, sortText) {
+        window.location.href = '?sort=' + sortBy;
+        const list = document.querySelector(".select-input__list");
+        const input = document.querySelector(".js-select-input-pass");
+        input.value = sortText;
+        list.classList.add("hide");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const select = document.querySelector(".js-select");
+        select.addEventListener("click", show);
+
+        document.getElementById("refresh-button").addEventListener("click", function() {
+          fetch('/refresh')
+            .then(response => {
+              if (response.ok) {
+                return response.json();
+              }
+              throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+              console.log('Data refreshed:', data);
+            })
+            .catch(error => {
+              console.error('There has been a problem with your fetch operation:', error);
+            });
+        });
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          !(
+            e.target.classList.contains("select-input__list") ||
+            e.target.classList.contains("select-input")
+          )
+        ) {
+          const list = document.querySelector(".select-input__list");
+          list.classList.add("hide");
+        }
+      });
+
+      function downloadWallets() {
+          const rank = $('#rankInput').val();
+
+          if (!rank) {
+              $('#modalMessage').html('Введите значение ранга');
+              return;
+          }
+
+          window.location.href = '/download_wallets?rank=' + rank;
+      }
+
+      $('#downloadButton').click(function() {
+          $('#modalBackdrop').css('display', 'flex');
+      });
+
+      $('#modalBackdrop').click(function(event) {
+          if (event.target.id === 'modalBackdrop') {
+              $('#modalBackdrop').hide();
+          }
+      });
+    </script>
+    </div>
+  </body>
+</html>

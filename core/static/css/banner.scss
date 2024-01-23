@@ -1,0 +1,29 @@
+.banner {
+  padding: 32px;
+  border-radius: 24px;
+  background: var(--bg-gradient);
+  display: flex;
+  gap: 32px;
+  width: 100%;
+
+  &__item {
+    width: 100%;
+
+    span {
+      display: block;
+
+      &:first-child {
+        margin-bottom: 16px;
+        font-size: 16px;
+        color: var(--text-secondary);
+        font-family: "med";
+      }
+
+      &:last-child {
+        color: var(--text);
+        font-size: 24px;
+        font-family: "bold";
+      }
+    }
+  }
+}
