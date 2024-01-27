@@ -4,59 +4,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>LayerZero checker by ThorLab</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/swiper.min.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2" />
-    <style>
-      /* Стиль для затемнения фона */
-      .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-      }
-
-      /* Стиль для модального окна */
-      #downloadModal {
-        background: var(--bg-gradient);
-        padding: 50px;
-        border-radius: 15px;
-        z-index: 10;
-        display: block;
-      }
-
-      .modal-backdrop {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        background-color: rgba(0, 0, 0, 0.5);
-      }
-    </style>
   </head>
   <body class="body">
     <div class="container">
       <div class="top">
-        <a href="https://t.me/thor_lab" class="top__logo" target="_blank">
+        <a href="https://t.me/thor_lab" class="top__logo">
           <img src="{{ url_for('static', filename='assets/thor.svg') }}" alt="logo" />
         </a>
         <div class="top__btns">
           <div class="top__btns-container">
             <button class="btn primary" id="refresh-button">Обновить данные</button>
-            <button class="btn primary second" id="downloadButton">
-                <img src="{{ url_for('static', filename='assets/file.svg') }}" alt="file" />
+            <button class="btn primary second" onclick="togglePopup('checker')">
+              <img src="{{ url_for('static', filename='assets/file.svg') }}" alt="file" />
             </button>
           </div>
-          <div class="select-wrap">
+          <div class="select-wrap" id="sort">
             <div class="select-input js-select">
               <input
                 type="text"
@@ -67,99 +31,457 @@
               />
               <img src="{{ url_for('static', filename='assets/arrow-down.svg') }}" />
             </div>
-            <div class="select-input__list hide">
-              <div>
-                <div class="select-input__item" onclick="change('rank', 'по рангу')">
-                  рангу
-                </div>
-                <div class="select-input__item" onclick="change('txsCount', 'по транзакциям')">
-                  кол-ву транзакций
-                </div>
-                <div class="select-input__item" onclick="change('volume', 'по объему')">
-                  объему
-                </div>
-                <div class="select-input__item" onclick="change('distinctMonths', 'по месяцам')">
-                  активным месяцам
-                </div>
-                <div class="select-input__item" onclick="change('networks', 'по исх. сетям')">
-                  исходящим сетям
-                </div>
-                <div class="select-input__item" onclick="change('destChains', 'по сетям назначения')">
-                  сетям назначения
-                </div>
-                <div class="select-input__item" onclick="change('contracts', 'по контрактам')">
-                  уникальным контрактам
+              <div class="select-input__list hide">
+                <div>
+                  <div class="select-input__item" onclick="change('rank', 'по рангу', 'sort')">
+                    рангу
+                  </div>
+                  <div class="select-input__item" onclick="change('last_activity', 'по дате активности', 'sort')">
+                    последней активности
+                  </div>
+                  <div class="select-input__item" onclick="change('count_txn', 'по транзакциям', 'sort')">
+                    кол-ву транзакций
+                  </div>
+                  <div class="select-input__item" onclick="change('volume', 'по объему', 'sort')">
+                    объему
+                  </div>
+                  <div class="select-input__item" onclick="change('distinct_months', 'по месяцам', 'sort')">
+                    активным месяцам
+                  </div>
+                  <div class="select-input__item" onclick="change('src_chains_count', 'по исх. сетям', 'sort')">
+                    исходящим сетям
+                  </div>
+                  <div class="select-input__item" onclick="change('dst_chains_count', 'по сетям назначения', 'sort')">
+                    сетям назначения
+                  </div>
+                  <div class="select-input__item" onclick="change('contracts', 'по контрактам', 'sort')">
+                    уникальным контрактам
+                  </div>
+
+                  <div class="select-input__item" onclick="change('is_mainnet', 'по транзе в майннете', 'sort')">
+                    транзакции в майннете
+                  </div>
                 </div>
               </div>
-            </div>
           </div>
         </div>
         <div class="banner">
-          <div class="banner__item">
-            <span>Всего кошельков</span><span id="walletsCount">{{ wallets_count|format_number }}</span>
+           <button class="banner__btn prev" onclick="prev()">
+            <img src="{{ url_for('static', filename='assets/prev.svg') }}" alt="prev" />
+          </button>
+          <div class="swiper">
+            <div class="swiper-wrapper">
+              <div class="banner__item swiper-slide">
+                <span>Всего загружено кошельков</span><span id="walletsCount">{{ wallets_count|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>ТОП 500 000 кошельков</span><span id="top500KWallets">{{ top_500k_wallets|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>ТОП 1 000 000 кошельков</span><span id="top1MWallets">{{ top_1m_wallets|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Общий объем на Stargate</span><span id="totalVolume">{{ total_volume|format_number }}$</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Самый высокий ранг</span><span id="topRank">{{ min_rank|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции в Mainnet</span><span id="without_eth_tx">{{ without_eth_tx|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции из Optimism</span><span id="without_src_optimism">{{ without_src_optimism|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции из Arbitrum</span><span id="without_src_arbitrum">{{ without_src_arbitrum|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции из Polygon</span><span id="without_src_polygon">{{ without_src_polygon|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции в Optimism</span><span id="without_dst_optimism">{{ without_dst_optimism|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции в Arbitrum</span><span id="without_dst_arbitrum">{{ without_dst_arbitrum|format_number }}</span>
+              </div>
+              <div class="banner__item swiper-slide">
+                <span>Нет транзакции в Polygon</span><span id="without_dst_polygon">{{ without_dst_polygon|format_number }}</span>
+              </div>
+            </div>
           </div>
-          <div class="banner__item">
-            <span>Кошельков в 500К</span><span id="top500KWallets">{{ top_500k_wallets|format_number }}</span>
-          </div>
-          <div class="banner__item">
-            <span>Кошельков в 1М</span><span id="top1MWallets">{{ top_1m_wallets|format_number }}</span>
-          </div>
-          <div class="banner__item">
-            <span>Общий объем</span><span id="totalVolume">{{ total_volume|format_number }}$</span>
-          </div>
-          <div class="banner__item">
-            <span>Топ ранг:</span><span id="minRank">{{ min_rank|format_number }}</span>
-          </div>
+          <button class="banner__btn next" onclick="next()">
+            <img src="{{ url_for('static', filename='assets/next.svg') }}" alt="next" />
+          </button>
         </div>
+      </div>
+      <div class="switch">
+        <div class="switch__title">Настройки таблицы:</div>
+        <div class="switch__item">
+          <input
+            type="checkbox"
+            onchange="toggleColumn('switch_1')"
+            name="switch_1"
+            id="switch_1"
+          /><label for="switch_1"></label>
+          <p>Отображать ID</p>
+        </div>
+        <div class="switch__item">
+          <input
+            type="checkbox"
+            name="switch_2"
+            id="switch_2"
+            onchange="toggleColumn('switch_2')"
+          /><label for="switch_2"></label>
+          <p>Кол-во транзакций</p>
+        </div>
+        <div class="switch__item">
+          <input
+            type="checkbox"
+            name="switch_3"
+            id="switch_3"
+            onchange="toggleColumn('switch_3')"
+          /><label for="switch_3"></label>
+          <p>Контракты</p>
+        </div>
+        <div class="switch__item">
+          <input
+            type="checkbox"
+            name="switch_4"
+            id="switch_4"
+            onchange="toggleColumn('switch_4')"
+          /><label for="switch_4"></label>
+          <p>Последнее обновление</p>
+        </div>
+        <button class="switch__btn" onclick="export_csv()">Экспортировать таблицу</button>
       </div>
       <div class="table-header">
         <div class="cell cell-lg">Кошелёк</div>
         <div class="cell cell-size-1">Ранг</div>
         <div class="cell cell-size-2">Объем</div>
-        <div class="cell cell-size-3">Кол-во<br />Транзакций</div>
-        <div class="cell cell-size-4">Исходящие сети/<br />Сети назначения</div>
-        <div class="cell cell-size-5">Уникальные<br />контракты</div>
-        <div class="cell cell-size-6">Активные<br />месяцы</div>
-        <div class="cell cell-size-7">Последнее<br />обновление</div>
+        <div class="cell cell-size-8 column_txn_count hide">Кол-во<br />Транз.</div>
+        <div class="cell cell-size-4">Исх. сети/<br />Сети назнач.</div>
+        <div class="cell cell-size-5 column_contracts hide">Уник.<br />контракты</div>
+        <div class="cell cell-size-6">Транза в<br />Эфире</div>
+        <div class="cell cell-size-9">Активные<br />месяцы</div>
+        <div class="cell cell-size-7">Последняя<br />активность</div>
+        <div class="cell cell-size-3 column_last_update hide">Данные<br />обновились</div>
       </div>
       <div class="table-body">
           {% for wallet in wallets %}
           <div class="table-item">
-              <div class="cell cell-lg">{{ wallet.address }}</div>
+              <div class="cell cell-lg wallet-address">{{ wallet.address }}</div>
+              <div class="cell cell-lg wallet-name hide">{{ wallet.wallet_name }}</div>
               <div class="cell cell-size-1">{{ wallet.rank|format_number }}</div>
               <div class="cell cell-size-2">{{ wallet.volume|format_number }}$</div>
-              <div class="cell cell-size-3">{{ wallet.txsCount }}</div>
-              <div class="cell cell-size-4">{{ wallet.networks }} / {{ wallet.destChains }}</div>
-              <div class="cell cell-size-5">{{ wallet.contracts }}</div>
-              <div class="cell cell-size-6">{{ wallet.distinctMonths }}</div>
-              <div class="cell cell-size-7">{{ wallet.rankUpdatedAt }} часа назад</div>
+              <div class="cell cell-size-8 column_txn_count hide">{{ wallet.count_txn }}</div>
+              <div class="cell cell-size-4"
+                   onmouseenter="onToogleCell(this)"
+                   onmouseleave="onToogleCell(this)">
+                {{ wallet.src_chains_count }} / {{ wallet.dst_chains_count }}
+                <div class="info">
+                  <p class="info__text">
+                    <span>Исходящие сети:</span> {{ wallet.src_chains_list|format_chain_list}}
+                  </p>
+                  <p class="info__text">
+                    <span>Сети назначения:</span> {{ wallet.dst_chains_list|format_chain_list}}
+                  </p>
+                </div>
+              </div>
+              <div class="cell cell-size-5 column_contracts hide">{{ wallet.contracts }}</div>
+              <div class="cell cell-size-6">
+                {% if wallet.is_mainnet %}
+                  Да
+                {% else %}
+                  Нет
+                {% endif %}
+              </div>
+              <div class="cell cell-size-9">{{ wallet.distinct_months }}</div>
+              <div class="cell cell-size-7">
+                {% if wallet.last_activity %}
+                  {{ wallet.last_activity.strftime('%d.%m.%Y') }}
+                {% else %}
+                  None
+                {% endif %}
+              </div>
+              <div class="cell cell-size-3 column_last_update hide">
+                {% if wallet.last_update %}
+                  {{ wallet.last_update|get_hours }} часа назад
+                {% else %}
+                  None
+                {% endif %}
+              </div>
           </div>
           {% endfor %}
       </div>
-      <div class="modal-backdrop" id="modalBackdrop">
-        <div id="downloadModal">
-          <div>
-            <input type="number" id="rankInput" placeholder="Введите ранг" class="item__input">
+    </div>
+    <div class="popup" onclick="hide(this)" id="checker">
+      <form class="checker" onclick="stop(event)">
+        <div class="checker__title">Экспорт данных</div>
+        <p class="checker__desc">
+          Для того чтобы скачать список кошельков, где не использовались
+          определенные исходящие сети/сети назначения, выберите параметры →
+          включить, в значениях перечислите через запятую название сетей. Вы
+          получите список в .txt с кошельками, на которых не было транзакций в
+          указанных сетях
+        </p>
+        <div class="checker__items">
+          <div class="checker__item">
+            <div class="checker__item-label">Какие данные</div>
+            <p class="checker__item-subtitle">Записать адреса или имена</p>
+            <div class="select-wrap" id="address">
+              <div class="select-input js-select">
+                <input
+                  type="text"
+                  class="js-select-input-pass"
+                  name="address"
+                  disabled
+                  value="Выберите..."
+                />
+                <img src="{{ url_for('static', filename='assets/arrow-down.svg') }}" />
+              </div>
+              <div class="select-input__list hide">
+                <div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Адреса', 'address', 'address')"
+                  >
+                    Адреса
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Названия', 'address', 'wallet_name')"
+                  >
+                    Названия
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div style="margin-top: 20px;">
-            <button style="margin-left: auto;margin-right: auto;" class="btn primary" onclick="downloadWallets()">Сохранить</button>
+          <div class="checker__item">
+            <div class="checker__item-label">Сортировка</div>
+            <p class="checker__item-subtitle">
+              По какому параметру отсортировать
+            </p>
+            <div class="select-wrap" id="sort-popup">
+              <div class="select-input js-select">
+                <input
+                  type="text"
+                  class="js-select-input-pass"
+                  name="sort-popup"
+                  disabled
+                  value="Выберите..."
+                />
+                <img src="{{ url_for('static', filename='assets/arrow-down.svg') }}" />
+              </div>
+              <div class="select-input__list hide">
+                <div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Ранг', 'sort-popup', 'rank')"
+                  >
+                    Ранг
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Последняя активность', 'sort-popup', 'last_activity')"
+                  >
+                    Последняя активность
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Кол-во транзакций', 'sort-popup', 'count_txn')"
+                  >
+                    Кол-во транзакций
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Объем', 'sort-popup', 'volume')"
+                  >
+                    Объем
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Активные месяцы', 'sort-popup', 'distinct_months')"
+                  >
+                    Активные месяцы
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Исходящие сети', 'sort-popup', 'src_chains_list')"
+                  >
+                    Исходящие сети
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Сети назначения', 'sort-popup', 'dst_chains_list')"
+                  >
+                    Сети назначения
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Кол-во контрактов', 'sort-popup', 'contracts')"
+                  >
+                    Кол-во контрактов
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Транза в майннете', 'sort-popup', 'is_mainnet')"
+                  >
+                    Транза в майннете
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div id="modalMessage"></div>
+          <div class="checker__item">
+            <div class="checker__item-label">Параметры</div>
+            <p class="checker__item-subtitle">Больше или меньше, включить</p>
+            <div class="select-wrap" id="params">
+              <div class="select-input js-select">
+                <input
+                  type="text"
+                  class="js-select-input-pass"
+                  name="params"
+                  disabled
+                  value="Выберите..."
+                />
+                <img src="{{ url_for('static', filename='assets/arrow-down.svg') }}" />
+              </div>
+              <div class="select-input__list hide">
+                <div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Больше', 'params', 'more')"
+                  >
+                    Больше
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Меньше', 'params', 'less')"
+                  >
+                    Меньше
+                  </div>
+                  <div
+                    class="select-input__item"
+                    onclick="changeForm('Присутствует', 'params', 'include')"
+                  >
+                    Присутствует
+                  </div>
+                                    <div
+                    class="select-input__item"
+                    onclick="changeForm('Отсутствует', 'params', 'miss')"
+                  >
+                    Отсутствует
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="checker__item">
+            <div class="checker__item-label">Значение</div>
+            <p class="checker__item-subtitle">
+              Без пробелов, формат дат: 01.01.2024
+            </p>
+            <div class="select-input">
+              <input type="text" name="values" placeholder="Укажите...">
+            </div>
+          </div>
         </div>
-      </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <button class="btn primary" onclick="submitForm()">Сохранить список</button>
+      </form>
+    </div>
+    <div class="popup" id="backdrop"></div>
+    <script src="{{ url_for('static', filename='vendor/swiper.min.js') }}"></script>
     <script>
-      function show() {
-        const list = document.querySelector(".select-input__list");
-        list.classList.toggle("hide");
+      let prev, next;
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const swiper = new Swiper(".swiper", {
+          slidesPerView: 5,
+          spaceBetween: 50,
+          loop: true,
+        });
+
+        prev = () => swiper.slidePrev();
+        next = () => swiper.slideNext();
+      });
+
+      function change(sortBy, sortText, selectId) {
+        window.location.href = '?sort=' + sortBy;
+
+        // Находим нужный select-wrap по ID
+        const selectWrap = document.getElementById(selectId);
+        if (!selectWrap) return;
+
+        // Находим внутри него input и list
+        const input = selectWrap.querySelector(".js-select-input-pass");
+        const list = selectWrap.querySelector(".select-input__list");
+
+        // Обновляем значение input и скрываем список
+        if (input) input.value = sortText;
+        if (list) list.classList.add("hide");
       }
 
-      function change(sortBy, sortText) {
-        window.location.href = '?sort=' + sortBy;
-        const list = document.querySelector(".select-input__list");
-        const input = document.querySelector(".js-select-input-pass");
-        input.value = sortText;
-        list.classList.add("hide");
+      function changeForm(displayText, selectId, dataValue) {
+        const selectWrap = document.getElementById(selectId);
+        if (!selectWrap) return;
+
+        const input = selectWrap.querySelector(".js-select-input-pass");
+        const list = selectWrap.querySelector(".select-input__list");
+
+        if (input) {
+          input.value = displayText;
+          input.setAttribute('data-value', dataValue);
+        }
+        if (list) list.classList.add("hide");
+      }
+
+      function submitForm() {
+        const addressInput = document.querySelector("#address .js-select-input-pass");
+        const sortInput = document.querySelector("#sort-popup .js-select-input-pass");
+        const paramsInput = document.querySelector("#params .js-select-input-pass");
+        const valuesInput = document.querySelector("[name='values']");
+
+        if (addressInput.getAttribute('data-value') && sortInput.getAttribute('data-value') && paramsInput.getAttribute('data-value') && valuesInput.value) {
+          const queryParams = new URLSearchParams({
+            address: addressInput.getAttribute('data-value'),
+            sort: sortInput.getAttribute('data-value'),
+            params: paramsInput.getAttribute('data-value'),
+            values: valuesInput.value
+          }).toString();
+
+        fetch('/download_with_parameters?' + queryParams)
+          .then(response => {
+            if (response.ok) {
+              const contentDisposition = response.headers.get('Content-Disposition');
+              const filename = contentDisposition
+                ? contentDisposition.split('filename=')[1].split(';')[0]
+                : 'wallets_list.txt';
+              return response.blob().then(blob => ({ blob, filename }));
+            } else {
+              return response.json();
+            }
+          })
+          .then(data => {
+            if (data.blob) {
+              const url = window.URL.createObjectURL(data.blob);
+              const downloadLink = document.createElement('a');
+              downloadLink.href = url;
+              downloadLink.setAttribute('download', data.filename);
+              document.body.appendChild(downloadLink);
+              downloadLink.click();
+              document.body.removeChild(downloadLink);
+            } else {
+              alert(data.message || 'Произошла ошибка');
+            }
+          })
+          .catch(error => {
+            console.error('Ошибка:', error);
+            alert(error);
+          });
+        } else {
+          alert("Пожалуйста, заполните все поля.");
+        }
       }
 
       document.addEventListener("DOMContentLoaded", () => {
@@ -183,6 +505,64 @@
         });
       });
 
+      function onToogleCell(elem) {
+        elem.parentNode.classList.toggle("offset");
+        elem.children[0].classList.toggle("active");
+        togglePopup("backdrop");
+      }
+
+      function toggleColumn(switchId) {
+        switch (switchId) {
+          case 'switch_1':
+            const walletNames = document.querySelectorAll('.wallet-name');
+            const walletAddresses = document.querySelectorAll('.wallet-address');
+            walletNames.forEach(name => name.classList.toggle('hide'));
+            walletAddresses.forEach(address => address.classList.toggle('hide'));
+            break;
+
+          case 'switch_2':
+            const txnCountColumns = document.querySelectorAll('.column_txn_count');
+            txnCountColumns.forEach(column => column.classList.toggle('hide'));
+            break;
+
+          case 'switch_3':
+            const contractsColumns = document.querySelectorAll('.column_contracts');
+            contractsColumns.forEach(column => column.classList.toggle('hide'));
+            break;
+
+          case 'switch_4':
+            const lastUpdateColumns = document.querySelectorAll('.column_last_update');
+            lastUpdateColumns.forEach(column => column.classList.toggle('hide'));
+            break;
+        }
+      }
+
+      function togglePopup(id) {
+        const popup = document.getElementById(id);
+        popup.classList.toggle("active");
+      }
+      function show(item) {
+        const list = item.parentNode.querySelector(".select-input__list");
+        list.classList.toggle("hide");
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const selects = document.querySelectorAll(".js-select");
+        selects.forEach((select) => {
+          select.addEventListener("click", () => {
+            show(select);
+          });
+        });
+      });
+
+      function hide(el) {
+        el.classList.remove("active");
+      }
+
+      function stop(ev) {
+        ev.stopPropagation();
+      }
+
       document.addEventListener("click", (e) => {
         if (
           !(
@@ -195,27 +575,19 @@
         }
       });
 
-      function downloadWallets() {
-          const rank = $('#rankInput').val();
+      function export_csv() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const sort = urlParams.get('sort') || 'rank';
 
-          if (!rank) {
-              $('#modalMessage').html('Введите значение ранга');
-              return;
-          }
+        const url = `/export_csv?sort=${sort}`;
 
-          window.location.href = '/download_wallets?rank=' + rank;
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.setAttribute('download', '');
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
       }
-
-      $('#downloadButton').click(function() {
-          $('#modalBackdrop').css('display', 'flex');
-      });
-
-      $('#modalBackdrop').click(function(event) {
-          if (event.target.id === 'modalBackdrop') {
-              $('#modalBackdrop').hide();
-          }
-      });
     </script>
-    </div>
   </body>
 </html>
