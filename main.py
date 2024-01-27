@@ -12,11 +12,13 @@ if __name__ == '__main__':
     setup_logger()
 
     wallets_list = load_wallets_from_file("data/wallets.txt")
+    name_list = load_wallets_from_file("data/names.txt")
     proxy_list = load_wallets_from_file("data/proxies.txt")
 
     DBManager.create_database(
         wallet_list=wallets_list,
         proxy_list=proxy_list,
+        name_list=name_list,
     )
 
     if not os.environ.get('WERKZEUG_RUN_MAIN'):
