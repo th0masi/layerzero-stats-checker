@@ -1,0 +1,50 @@
+.switch {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  margin-bottom: 45px;
+
+  &__title {
+    font-size: 16px;
+    font-family: "med";
+    color: var(--text-secondary);
+  }
+
+  &__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    p {
+      font-size: 16px;
+      font-family: "med";
+      color: var(--text-secondary);
+    }
+
+    input {
+      display: none;
+    }
+
+    label {
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      border: 1px solid var(--primary-20);
+      background: var(--bg-accent-2);
+    }
+
+    input:checked + label {
+      background: url("../assets/check.svg") no-repeat center/15px,
+        var(--bg-accent-2);
+    }
+  }
+
+  &__btn {
+    background: none;
+    outline: none;
+    border: none;
+    font-size: 16px;
+    color: var(--primary);
+    font-family: "med";
+    margin-left: auto;
+  }
+}

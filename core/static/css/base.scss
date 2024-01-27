@@ -117,3 +117,38 @@ body {
     }
   }
 }
+
+.offset {
+  z-index: 100000;
+}
+
+.popup {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  z-index: 100;
+  display: none;
+  align-items: center;
+  padding: 40px;
+  justify-content: center;
+  background: rgba(18, 21, 32, 0.6);
+
+  &.active {
+    display: flex;
+  }
+
+  &__card {
+    max-width: 1280px;
+    background: var(--bg-accent-2-80);
+    padding: 32px;
+    border-radius: 24px;
+    width: 100%;
+    display: flex;
+    min-height: 40%;
+    align-items: center;
+    justify-content: center;
+  }
+}

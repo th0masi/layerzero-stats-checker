@@ -1,0 +1,65 @@
+.checker {
+  background: var(--bg-gradient);
+  padding: 47px 62px;
+  border-radius: 24px;
+  width: 100%;
+  max-width: 1354px;
+
+  &__title {
+    font-size: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-family: "med";
+    color: var(--white);
+  }
+
+  &__desc {
+    text-align: center;
+    font-style: italic;
+    font-size: 14px;
+    font-family: "reg";
+    color: var(--text-secondary);
+    margin-bottom: 40px;
+  }
+
+  &__items {
+    margin-bottom: 40px;
+    display: flex;
+    justify-content: space-between;
+    gap: 50px;
+    align-items: stretch;
+
+    .select-input {
+      border: 0.5px solid rgba(255, 255, 255, 0.07);
+      color: var(--white);
+      background: var(--bg-basic);
+
+      &__item,
+      &__list {
+        background: var(--bg-basic);
+      }
+    }
+  }
+
+  &__item {
+    width: 100%;
+    position: relative;
+    &-label {
+      color: var(--white);
+      margin-bottom: 7px;
+      font-size: 16px;
+      font-family: "med";
+    }
+
+    &-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      font-family: "reg";
+    }
+  }
+
+  & > .btn {
+    margin: 0 auto;
+  }
+}

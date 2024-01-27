@@ -3,8 +3,21 @@
   border-radius: 24px;
   background: var(--bg-gradient);
   display: flex;
-  gap: 32px;
+  gap: 34px;
   width: 100%;
+  max-width: 70.68%;
+
+  &__btn {
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
+  }
 
   &__item {
     width: 100%;

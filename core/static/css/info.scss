@@ -1,0 +1,29 @@
+.info {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  z-index: 20000000;
+  padding: 40px 20px;
+  background: var(--bg-gradient);
+  min-width: 394px;
+  border-radius: 24px;
+  flex-direction: column;
+  gap: 20px;
+  display: none;
+
+  &.active {
+    display: flex;
+  }
+
+  p {
+    font-size: 14px;
+    font-family: "reg";
+    word-break: break-word;
+    font-style: italic;
+    color: var(--text-secondary);
+    text-align: left;
+    span {
+      color: var(--white);
+    }
+  }
+}
