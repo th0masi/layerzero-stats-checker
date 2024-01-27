@@ -1,6 +1,6 @@
 # layerzero-stats-checker
 
-![Скриншот софта](https://i.imgur.com/zXjqZiH.png)
+![Скриншот софта](https://i.imgur.com/fdHCpl7.png)
 
 ## Обновление от 27.01.2024 
 
