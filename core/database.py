@@ -40,8 +40,7 @@ class DBManager:
     @staticmethod
     def create_database(
             wallet_list: list,
-            name_list: list,
-            proxy_list: list
+            name_list: list
     ):
         session = None
         try:
