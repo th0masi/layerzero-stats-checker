@@ -16,7 +16,6 @@ class Wallet(Base):
 
     address: Mapped[Annotated[str, mapped_column(primary_key=True)]]
     wallet_name: Mapped[Annotated[str, mapped_column(nullable=True)]]
-    proxy: Mapped[Annotated[int, mapped_column()]]
     last_update: Mapped[Annotated[int, mapped_column(nullable=True)]]
     rank: Mapped[Annotated[int, mapped_column(nullable=True)]]
     count_txn: Mapped[Annotated[int, mapped_column(nullable=True)]]
