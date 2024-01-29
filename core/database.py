@@ -51,9 +51,9 @@ class DBManager:
             existing_wallets = session.query(Wallet.address).all()
             existing_wallets = {wallet.address for wallet in existing_wallets}
 
-            for wallet, name, proxy in zip(wallet_list, name_list, proxy_list):
+            for wallet, name in zip(wallet_list, name_list):
                 if wallet not in existing_wallets:
-                    new_wallet = Wallet(address=wallet, wallet_name=name, proxy=proxy)
+                    new_wallet = Wallet(address=wallet, wallet_name=name)
                     session.add(new_wallet)
 
             session.commit()
