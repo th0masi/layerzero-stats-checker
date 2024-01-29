@@ -17,7 +17,6 @@ if __name__ == '__main__':
 
     DBManager.create_database(
         wallet_list=wallets_list,
-        proxy_list=proxy_list,
         name_list=name_list,
     )
 
