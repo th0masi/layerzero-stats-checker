@@ -134,7 +134,7 @@ def export_csv():
                     wallet.address or 'None',
                     wallet.wallet_name or 'None',
                     str(wallet.rank) if wallet.rank is not None else 'None',
-                    format_number(wallet.volume) if wallet.volume is not None else 'None',
+                    str(wallet.volume) if wallet.volume is not None else 'None',
                     str(wallet.count_txn) if wallet.count_txn is not None else 'None',
                     f"{wallet.src_chains_count or 'None'} / {wallet.dst_chains_count or 'None'}",
                     str(wallet.contracts) if wallet.contracts is not None else 'None',
