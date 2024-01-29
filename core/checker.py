@@ -1,6 +1,8 @@
 import json
+import random
+import traceback
 
-from core.utils import get_current_time
+from core.utils import get_current_time, load_wallets_from_file
 from web3 import Web3
 from datetime import datetime
 import requests
@@ -14,22 +16,18 @@ def check_stats():
     wallets_data = DBManager.get_all_wallets()
 
     for wallet in wallets_data:
-        stat = Stats(wallet=wallet.address, proxy=wallet.proxy)
+        stat = Stats(wallet=wallet.address)
         stat.get_stat_by_wallet()
 
     logger.info(f'Получил данные для всех кошельков')
 
 
 class Stats:
-    def __init__(self, wallet, proxy):
+    def __init__(self, wallet):
         self.copilot_url = 'https://nftcopilot.com/p-api/layer-zero-rank/check'
         self.l0_url = 'https://layerzeroscan.com/api/trpc/messages.list'
         self.w3 = Web3(Web3.HTTPProvider('https://eth.drpc.org'))
-        self.proxy_str = proxy
-        self.proxy = {
-            "http": f"http://{self.proxy_str}",
-            "https": f"http://{self.proxy_str}"
-        }
+        self.proxy_list = load_wallets_from_file("data/proxies.txt")
         self.wallet = wallet
         self.attempts = 3
 
@@ -78,95 +76,101 @@ class Stats:
     def get_data_from_copilot(
             self,
     ):
-        for attempt in range(self.attempts):
-            try:
-                query = {
-                    "address": f'{self.wallet}',
-                    "addresses": [
-                        f'{self.wallet}'
-                    ],
-                    "c": 'check'
-                }
+        try:
+            query = {
+                "address": f'{self.wallet}',
+                "addresses": [
+                    f'{self.wallet}'
+                ],
+                "c": 'check'
+            }
 
-                response = self.send_request(method='post', url=self.copilot_url, data=query)
-                data = response.json()
-                return data
+            response = self.send_request(method='post', url=self.copilot_url, data=query)
+            data = response.json()
+            return data
 
-            except json.decoder.JSONDecodeError:
-                logger.error(f'COPILOT | Ошибка при получении данных {self.wallet}: '
-                             f'Невозможно декодировать JSON из ответа сервера')
-                continue
+        except json.decoder.JSONDecodeError:
+            logger.error(f'COPILOT | Ошибка при получении данных {self.wallet}: '
+                         f'Невозможно декодировать JSON из ответа сервера')
 
-            except Exception as e:
-                logger.error(f'COPILOT | Ошибка при получении данных {self.wallet}:'
-                             f' {e}')
-                continue
+        except Exception as e:
+            logger.error(f'COPILOT | Ошибка при получении данных {self.wallet}:'
+                         f' {e}')
 
     def get_data_from_layerzero_api(self):
-        for attempt in range(self.attempts):
-            try:
-                params = {
-                    "filters": {
-                        "address": self.wallet,
-                        "stage": "mainnet",
-                        "created": {}
-                    }
+        try:
+            params = {
+                "filters": {
+                    "address": self.wallet,
+                    "stage": "mainnet",
+                    "created": {}
                 }
-                query_string = json.dumps(params)
-                url_with_params = f"{self.l0_url}?input={query_string}"
+            }
+            query_string = json.dumps(params)
+            url_with_params = f"{self.l0_url}?input={query_string}"
 
-                response = self.send_request(method='get', url=url_with_params)
-                data = response.json()
+            response = self.send_request(method='get', url=url_with_params)
+            data = response.json()
 
-                messages = data.get('result', {}).get('data', {}).get('messages', None)
-                if not messages:
-                    return False
+            messages = data.get('result', {}).get('data', {}).get('messages', None)
+            if not messages:
+                return False
 
-                dst_chain_list = set()
-                src_chain_list = set()
-                created_date = None
+            dst_chain_list = set()
+            src_chain_list = set()
+            created_date = None
 
-                for message in messages:
-                    dst_chain_list.add(message.get('dstChainKey'))
-                    src_chain_list.add(message.get('srcChainKey'))
+            for message in messages:
+                dst_chain_list.add(message.get('dstChainKey'))
+                src_chain_list.add(message.get('srcChainKey'))
 
-                    if not created_date and message.get('mainStatus') == 'DELIVERED':
-                        created_timestamp = int(message.get('created'))
-                        created_date = datetime.fromtimestamp(created_timestamp).date()
+                if not created_date and message.get('mainStatus') == 'DELIVERED':
+                    created_timestamp = int(message.get('created'))
+                    created_date = datetime.fromtimestamp(created_timestamp).date()
 
-                response_data = {
-                    'last_activity': created_date,
-                    'dst_chain_list': ','.join(map(str, dst_chain_list)),
-                    'src_chain_list': ','.join(map(str, src_chain_list)),
-                    'count_dst_chain_list': len(dst_chain_list),
-                    'count_src_chain_list': len(src_chain_list),
-                    'count_txn': len(messages),
-                }
+            response_data = {
+                'last_activity': created_date,
+                'dst_chain_list': ','.join(map(str, dst_chain_list)),
+                'src_chain_list': ','.join(map(str, src_chain_list)),
+                'count_dst_chain_list': len(dst_chain_list),
+                'count_src_chain_list': len(src_chain_list),
+                'count_txn': len(messages),
+            }
 
-                return response_data
+            return response_data
 
-            except Exception as e:
-                logger.error(f'LAYERZERO | При получении данных возникла ошибка: {e}')
-                continue
+        except Exception as e:
+            logger.error(f'LAYERZERO | При получении данных возникла ошибка: {e}')
 
     def send_request(self, method, url, data=None):
         headers = self.get_headers(url)
 
-        if method.lower() == 'get':
-            response = requests.get(
-                url=url,
-                headers=headers,
-                proxies=self.proxy
-            )
-        else:
-            response = requests.post(
-                url=url,
-                headers=headers,
-                json=data,
-                proxies=self.proxy
-            )
+        random.shuffle(self.proxy_list)
 
-        return response
+        for proxy in self.proxy_list:
+            try:
+                proxy = {
+                    "http": f"http://{proxy}",
+                    "https": f"http://{proxy}"
+                }
+
+                if method.lower() == 'get':
+                    response = requests.get(
+                        url=url,
+                        headers=headers,
+                        proxies=proxy
+                    )
+                else:
+                    response = requests.post(
+                        url=url,
+                        headers=headers,
+                        json=data,
+                        proxies=proxy
+                    )
+                return response
+
+            except Exception:
+                continue
 
     def get_headers(self, url):
         base_headers = {
