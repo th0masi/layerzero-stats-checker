@@ -18,6 +18,7 @@ class Wallet(Base):
     wallet_name: Mapped[Annotated[str, mapped_column(nullable=True)]]
     last_update: Mapped[Annotated[int, mapped_column(nullable=True)]]
     rank: Mapped[Annotated[int, mapped_column(nullable=True)]]
+    prev_rank: Mapped[Annotated[int, mapped_column(nullable=True)]]
     count_txn: Mapped[Annotated[int, mapped_column(nullable=True)]]
     volume: Mapped[Annotated[float, mapped_column(nullable=True)]]
     distinct_months: Mapped[Annotated[int, mapped_column(nullable=True)]]
