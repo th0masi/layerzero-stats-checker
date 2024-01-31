@@ -264,6 +264,19 @@ body {
   color: var(--text);
   font-family: "reg";
 }
+.cell span {
+  font-size: 10.5px;
+  display: block;
+}
+.cell .positive {
+  text-align: right;
+  color: var(--success);
+}
+
+.cell .negative {
+  text-align: right;
+  color: var(--error);
+}
 .cell.hide {
   display: none;
 }
@@ -558,6 +571,11 @@ body {
   color: var(--primary);
   font-family: "med";
   margin-left: auto;
+  cursor: pointer;
 }
 
+.wallet-address img, .wallet-name img {
+    cursor: pointer;
+    padding-right: 4px;
+}
 /*# sourceMappingURL=style.css.map */
