@@ -1,7 +1,7 @@
 import logging
 import tempfile
 
-from core.checker import check_stats
+from core.checker import check_stats, check_stat_by_wallet
 from core.database import DBManager
 from core.utils import get_hours, format_chain_list, format_number
 from flask import Flask, render_template, request, jsonify, send_file
@@ -39,48 +39,6 @@ def wallet_table():
         values='1',
     )
 
-    without_src_optimism = DBManager.get_wallets_with_options(
-        address='address',
-        sort='src_chains_list',
-        params='miss',
-        values='optimism',
-    )
-
-    without_src_arbitrum = DBManager.get_wallets_with_options(
-        address='address',
-        sort='src_chains_list',
-        params='miss',
-        values='arbitrum',
-    )
-
-    without_src_polygon = DBManager.get_wallets_with_options(
-        address='address',
-        sort='src_chains_list',
-        params='miss',
-        values='polygon',
-    )
-
-    without_dst_optimism = DBManager.get_wallets_with_options(
-        address='address',
-        sort='dst_chains_list',
-        params='miss',
-        values='optimism',
-    )
-
-    without_dst_arbitrum = DBManager.get_wallets_with_options(
-        address='address',
-        sort='dst_chains_list',
-        params='miss',
-        values='arbitrum',
-    )
-
-    without_dst_polygon = DBManager.get_wallets_with_options(
-        address='address',
-        sort='dst_chains_list',
-        params='miss',
-        values='polygon',
-    )
-
     return render_template(
         'index.html',
         wallets=wallets,
@@ -91,12 +49,6 @@ def wallet_table():
         top_1m_wallets=top_1m_wallets,
         month_age=len(month_age) if month_age else 0,
         without_eth_tx=len(without_eth_tx),
-        without_src_optimism=len(without_src_optimism) if without_src_optimism else 0,
-        without_src_arbitrum=len(without_src_arbitrum) if without_src_arbitrum else 0,
-        without_src_polygon=len(without_src_polygon) if without_src_polygon else 0,
-        without_dst_optimism=len(without_dst_optimism) if without_dst_optimism else 0,
-        without_dst_arbitrum=len(without_dst_arbitrum) if without_dst_arbitrum else 0,
-        without_dst_polygon=len(without_dst_polygon) if without_dst_polygon else 0,
     )
 
 
@@ -134,7 +86,7 @@ def export_csv():
                     wallet.address or 'None',
                     wallet.wallet_name or 'None',
                     str(wallet.rank) if wallet.rank is not None else 'None',
-                    str(wallet.volume) if wallet.volume is not None else 'None',
+                    format_number(wallet.volume) if wallet.volume is not None else 'None',
                     str(wallet.count_txn) if wallet.count_txn is not None else 'None',
                     f"{wallet.src_chains_count or 'None'} / {wallet.dst_chains_count or 'None'}",
                     str(wallet.contracts) if wallet.contracts is not None else 'None',
@@ -181,3 +133,11 @@ def download_wallets():
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)})
+
+
+@app.route('/update_wallet')
+def update_wallet():
+    wallet_address = request.args.get('address')
+
+    check_stat_by_wallet(wallet_address)
+    return jsonify({'status': 'success', 'message': 'Data refreshed successfully'})
