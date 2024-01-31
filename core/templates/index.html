@@ -15,7 +15,7 @@
         </a>
         <div class="top__btns">
           <div class="top__btns-container">
-            <button class="btn primary" id="refresh-button">Обновить данные</button>
+            <button class="btn primary" id="refresh-button">Обновить</button>
             <button class="btn primary second" onclick="togglePopup('checker')">
               <img src="{{ url_for('static', filename='assets/file.svg') }}" alt="file" />
             </button>
@@ -89,24 +89,6 @@
               <div class="banner__item swiper-slide">
                 <span>Нет транзакции в Mainnet</span><span id="without_eth_tx">{{ without_eth_tx|format_number }}</span>
               </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции из Optimism</span><span id="without_src_optimism">{{ without_src_optimism|format_number }}</span>
-              </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции из Arbitrum</span><span id="without_src_arbitrum">{{ without_src_arbitrum|format_number }}</span>
-              </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции из Polygon</span><span id="without_src_polygon">{{ without_src_polygon|format_number }}</span>
-              </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции в Optimism</span><span id="without_dst_optimism">{{ without_dst_optimism|format_number }}</span>
-              </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции в Arbitrum</span><span id="without_dst_arbitrum">{{ without_dst_arbitrum|format_number }}</span>
-              </div>
-              <div class="banner__item swiper-slide">
-                <span>Нет транзакции в Polygon</span><span id="without_dst_polygon">{{ without_dst_polygon|format_number }}</span>
-              </div>
             </div>
           </div>
           <button class="banner__btn next" onclick="next()">
@@ -169,9 +151,33 @@
       <div class="table-body">
           {% for wallet in wallets %}
           <div class="table-item">
-              <div class="cell cell-lg wallet-address">{{ wallet.address }}</div>
-              <div class="cell cell-lg wallet-name hide">{{ wallet.wallet_name }}</div>
-              <div class="cell cell-size-1">{{ wallet.rank|format_number }}</div>
+              <div class="cell cell-lg wallet-address">
+                <img
+                        src="{{ url_for('static', filename='assets/reload.svg') }}"
+                        alt="Reload"
+                        onclick="updateInfoWallets('{{ wallet.address }}')"
+                />
+                {{ wallet.address }}
+              </div>
+              <div class="cell cell-lg wallet-name hide">
+                <img
+                        src="{{ url_for('static', filename='assets/reload.svg') }}"
+                        alt="Reload"
+                        onclick="updateInfoWallets('{{ wallet.address }}')"
+                />
+                {{ wallet.wallet_name }}
+              </div>
+              <div class="cell cell-size-1">
+                {{ wallet.rank|format_number }}
+                {% if wallet.prev_rank %}
+                  {% set rank_difference = wallet.prev_rank - wallet.rank %}
+                  {% if rank_difference > 0 %}
+                    <span class="positive">+{{ rank_difference|format_number }}</span>
+                  {% elif rank_difference < 0 %}
+                    <span class="negative">{{ rank_difference|format_number }}</span>
+                  {% endif %}
+                {% endif %}
+              </div>
               <div class="cell cell-size-2">{{ wallet.volume|format_number }}$</div>
               <div class="cell cell-size-8 column_txn_count hide">{{ wallet.count_txn }}</div>
               <div class="cell cell-size-4"
@@ -587,6 +593,22 @@
         document.body.appendChild(downloadLink);
         downloadLink.click();
         document.body.removeChild(downloadLink);
+      }
+
+      function updateInfoWallets(walletAddress) {
+        var xhttp = new XMLHttpRequest();
+
+        xhttp.onreadystatechange = function() {
+          if (this.readyState == 4 && this.status == 200) {
+            var response = JSON.parse(this.responseText);
+            console.log(response.message);
+          }
+        };
+
+        var url = '/update_wallet?address=' + encodeURIComponent(walletAddress);
+
+        xhttp.open("GET", url, true);
+        xhttp.send();
       }
     </script>
   </body>
