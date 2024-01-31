@@ -13,7 +13,6 @@ if __name__ == '__main__':
 
     wallets_list = load_wallets_from_file("data/wallets.txt")
     name_list = load_wallets_from_file("data/names.txt")
-    proxy_list = load_wallets_from_file("data/proxies.txt")
 
     DBManager.create_database(
         wallet_list=wallets_list,
@@ -21,6 +20,6 @@ if __name__ == '__main__':
     )
 
     if not os.environ.get('WERKZEUG_RUN_MAIN'):
-        logger.info("Запущен локальный сервер: http://127.0.0.1:5000")
+        logger.info("Запущен локальный сервер: http://127.0.0.1:8080")
 
-    Thread(target=lambda: app.run(debug=True, use_reloader=False)).start()
+    Thread(target=lambda: app.run(debug=True, use_reloader=False, port=8080)).start()
