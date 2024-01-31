@@ -1,6 +1,5 @@
 import json
 import random
-import traceback
 
 from core.utils import get_current_time, load_wallets_from_file
 from web3 import Web3
@@ -12,12 +11,16 @@ from pyuseragents import random as random_useragent
 import uuid
 
 
+def check_stat_by_wallet(address):
+    stat = Stats(wallet=address)
+    stat.get_stat_by_wallet()
+
+
 def check_stats():
     wallets_data = DBManager.get_all_wallets()
 
     for wallet in wallets_data:
-        stat = Stats(wallet=wallet.address)
-        stat.get_stat_by_wallet()
+        check_stat_by_wallet(address=wallet.address)
 
     logger.info(f'Получил данные для всех кошельков')
 
@@ -37,8 +40,7 @@ class Stats:
     ):
         copilot_data = self.get_data_from_copilot()
         layerzero_data = self.get_data_from_layerzero_api()
-        nonce = self.is_mannet_txn()
-        mainnet_status = nonce >= 1
+        mainnet_status = self.is_mainnet_txn()
 
         if not copilot_data and not layerzero_data:
             logger.error(f'Не удалось получить данные для кошелька {self.wallet}')
@@ -194,13 +196,17 @@ class Stats:
 
         return base_headers
 
-    def is_mannet_txn(self):
+    def is_mainnet_txn(self, is_mainnet=False):
         try:
             nonce = self.w3.eth.get_transaction_count(
                 self.w3.to_checksum_address(self.wallet)
             )
 
-            return nonce
+            if nonce > 0:
+                is_mainnet = True
+
         except Exception as e:
             logger.error(f'NONCE | Ошибка при получении данных {self.wallet}: {e}')
-            return 0
+
+        finally:
+            return is_mainnet
