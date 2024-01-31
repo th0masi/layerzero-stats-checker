@@ -40,7 +40,7 @@ class DBManager:
     @staticmethod
     def create_database(
             wallet_list: list,
-            name_list: list
+            name_list: list,
     ):
         session = None
         try:
@@ -80,6 +80,8 @@ class DBManager:
         existing_wallet = session.query(Wallet).filter_by(address=address).first()
 
         if existing_wallet:
+            if 'rank' in wallet_data and existing_wallet.prev_rank is None:
+                existing_wallet.prev_rank = wallet_data['rank']
             for key, value in wallet_data.items():
                 if key != 'address':
                     setattr(existing_wallet, key, value)
@@ -100,13 +102,13 @@ class DBManager:
     def get_sorted_wallets(sort_by: str, session=None):
         sort_options = {
             'rank': Wallet.rank,
-            'txsCount': Wallet.count_txn,
+            'count_txn': Wallet.count_txn,
             'volume': Wallet.volume,
-            'distinctMonths': Wallet.distinct_months,
-            'networks': Wallet.src_chains_count,
+            'distinct_months': Wallet.distinct_months,
+            'src_chains_count': Wallet.src_chains_count,
             'contracts': Wallet.contracts,
-            'destChains': Wallet.dst_chains_count,
-            'mainnet': Wallet.is_mainnet,
+            'dst_chains_count': Wallet.dst_chains_count,
+            'is_mainnet': Wallet.is_mainnet,
             'last_activity': Wallet.last_activity
         }
 
@@ -141,7 +143,7 @@ class DBManager:
                 'src_chains_list': Wallet.src_chains_list,
                 'contracts': Wallet.contracts,
                 'dst_chains_list': Wallet.dst_chains_list,
-                'mainnet': Wallet.is_mainnet,
+                'is_mainnet': Wallet.is_mainnet,
                 'last_activity': Wallet.last_activity
             }
 
